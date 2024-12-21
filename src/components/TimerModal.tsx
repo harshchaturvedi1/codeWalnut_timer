@@ -37,33 +37,50 @@ export const TimerModal: FC<TimerModalProps> = ({ isOpen, onClose, timer }) => {
         seconds: false,
     });
 
+    // For top-level error message
+    const [formErrorMessage, setFormErrorMessage] = useState<string | null>(null);
+
     // Timer store actions
     const { addTimer, editTimer } = useTimerStore();
+
+    // Helper to reset all fields
+    const resetForm = () => {
+        setTitle('');
+        setDescription('');
+        setHours(0);
+        setMinutes(0);
+        setSeconds(0);
+        setTouched({
+            title: false,
+            hours: false,
+            minutes: false,
+            seconds: false,
+        });
+        setFormErrorMessage(null);
+    };
 
     // Reset form fields whenever the modal opens/closes or when switching timers
     useEffect(() => {
         if (isOpen) {
+            // If editing, populate fields from existing timer
             if (isEditing && timer) {
-                // Populate fields with existing timer data for editing
                 setTitle(timer.title);
                 setDescription(timer.description);
                 setHours(Math.floor(timer.duration / 3600));
                 setMinutes(Math.floor((timer.duration % 3600) / 60));
                 setSeconds(timer.duration % 60);
+                // Clear any previous errors
+                setFormErrorMessage(null);
+                setTouched({
+                    title: false,
+                    hours: false,
+                    minutes: false,
+                    seconds: false,
+                });
             } else {
-                // Clear fields for creating a new timer
-                setTitle('');
-                setDescription('');
-                setHours(0);
-                setMinutes(0);
-                setSeconds(0);
+                // New timer: start with empty fields
+                resetForm();
             }
-            setTouched({
-                title: false,
-                hours: false,
-                minutes: false,
-                seconds: false,
-            });
         }
     }, [isOpen, isEditing, timer]);
 
@@ -75,6 +92,7 @@ export const TimerModal: FC<TimerModalProps> = ({ isOpen, onClose, timer }) => {
         // Validate form fields
         const isFormValid = validateTimerForm({ title, description, hours, minutes, seconds });
         if (!isFormValid) {
+            setFormErrorMessage('Please fix the highlighted fields before submitting.');
             return;
         }
 
@@ -87,6 +105,9 @@ export const TimerModal: FC<TimerModalProps> = ({ isOpen, onClose, timer }) => {
                 description: description.trim(),
                 duration: totalSeconds,
             });
+
+            // Reset immediately after successful edit
+            resetForm();
         } else {
             // Creating a new timer
             addTimer({
@@ -103,12 +124,8 @@ export const TimerModal: FC<TimerModalProps> = ({ isOpen, onClose, timer }) => {
 
     const handleClose = (): void => {
         onClose();
-        setTouched({
-            title: false,
-            hours: false,
-            minutes: false,
-            seconds: false,
-        });
+        // Also reset form on close, to be completely sure
+        resetForm();
     };
 
     // Validation checks
@@ -135,6 +152,13 @@ export const TimerModal: FC<TimerModalProps> = ({ isOpen, onClose, timer }) => {
                     </Button>
                 </div>
 
+                {/* Top-level error message */}
+                {formErrorMessage && (
+                    <div className="mb-4 text-sm font-medium text-red-600">
+                        {formErrorMessage}
+                    </div>
+                )}
+
                 {/* Modal Form */}
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Title Input */}
@@ -146,7 +170,9 @@ export const TimerModal: FC<TimerModalProps> = ({ isOpen, onClose, timer }) => {
                             type="text"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            onBlur={() => setTouched((prev) => ({ ...prev, title: true }))}
+                            onBlur={() =>
+                                setTouched((prev) => ({ ...prev, title: true }))
+                            }
                             maxLength={50}
                             className={`w-full px-3 py-2 border ${touched.title && !isTitleValid
                                     ? 'border-red-500 focus:ring-red-500'
@@ -185,7 +211,9 @@ export const TimerModal: FC<TimerModalProps> = ({ isOpen, onClose, timer }) => {
                         </label>
                         <div className="grid grid-cols-3 gap-4">
                             <div>
-                                <label className="block text-sm text-gray-600 mb-1">Hours</label>
+                                <label className="block text-sm text-gray-600 mb-1">
+                                    Hours
+                                </label>
                                 <input
                                     type="number"
                                     min={0}
@@ -194,12 +222,16 @@ export const TimerModal: FC<TimerModalProps> = ({ isOpen, onClose, timer }) => {
                                     onChange={(e) =>
                                         setHours(Math.min(23, parseInt(e.target.value, 10) || 0))
                                     }
-                                    onBlur={() => setTouched((prev) => ({ ...prev, hours: true }))}
+                                    onBlur={() =>
+                                        setTouched((prev) => ({ ...prev, hours: true }))
+                                    }
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm text-gray-600 mb-1">Minutes</label>
+                                <label className="block text-sm text-gray-600 mb-1">
+                                    Minutes
+                                </label>
                                 <input
                                     type="number"
                                     min={0}
@@ -208,12 +240,16 @@ export const TimerModal: FC<TimerModalProps> = ({ isOpen, onClose, timer }) => {
                                     onChange={(e) =>
                                         setMinutes(Math.min(59, parseInt(e.target.value, 10) || 0))
                                     }
-                                    onBlur={() => setTouched((prev) => ({ ...prev, minutes: true }))}
+                                    onBlur={() =>
+                                        setTouched((prev) => ({ ...prev, minutes: true }))
+                                    }
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm text-gray-600 mb-1">Seconds</label>
+                                <label className="block text-sm text-gray-600 mb-1">
+                                    Seconds
+                                </label>
                                 <input
                                     type="number"
                                     min={0}
@@ -222,7 +258,9 @@ export const TimerModal: FC<TimerModalProps> = ({ isOpen, onClose, timer }) => {
                                     onChange={(e) =>
                                         setSeconds(Math.min(59, parseInt(e.target.value, 10) || 0))
                                     }
-                                    onBlur={() => setTouched((prev) => ({ ...prev, seconds: true }))}
+                                    onBlur={() =>
+                                        setTouched((prev) => ({ ...prev, seconds: true }))
+                                    }
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>
@@ -237,11 +275,11 @@ export const TimerModal: FC<TimerModalProps> = ({ isOpen, onClose, timer }) => {
                     {/* Form Buttons */}
                     <div className="flex justify-end gap-3 pt-4 border-t">
                         <Button label="Cancel" onClick={handleClose} variant="secondary" />
+                        {/* Not disabling the button, so user can see error message if invalid */}
                         <Button
                             label={isEditing ? 'Save Changes' : 'Add Timer'}
                             type="submit"
                             variant="primary"
-                            disabled={!isTitleValid || !isTimeValid}
                         />
                     </div>
                 </form>
