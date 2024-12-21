@@ -3,6 +3,7 @@ export class TimerAudio {
   private audioContext: AudioContext | null = null;
   private oscillator: OscillatorNode | null = null;
   private gainNode: GainNode | null = null;
+  private isPlaying: boolean = false;
 
   // Ensure `stop` is always bound
   constructor() {
@@ -27,6 +28,12 @@ export class TimerAudio {
   }
 
   async play(): Promise<void> {
+    if (this.isPlaying) {
+      return; // Prevent multiple overlapping sounds
+    }
+
+    this.isPlaying = true;
+
     try {
       await this.initializeAudioContext();
 
@@ -41,30 +48,26 @@ export class TimerAudio {
       this.oscillator.type = 'sine';
       this.oscillator.frequency.setValueAtTime(880, this.audioContext.currentTime); // A5 note
 
-      // Configure gain (volume) envelope
-      this.gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
-      this.gainNode.gain.linearRampToValueAtTime(0.5, this.audioContext.currentTime + 0.01);
-      this.gainNode.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + 0.5);
+      // Set gain (volume)
+      this.gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
 
       // Connect nodes
       this.oscillator.connect(this.gainNode);
       this.gainNode.connect(this.audioContext.destination);
 
-      // Start and stop the oscillator
-      this.oscillator.start(this.audioContext.currentTime);
-      this.oscillator.stop(this.audioContext.currentTime + 0.5);
+      // Start the oscillator
+      this.oscillator.start();
 
-      // Cleanup after sound ends
-      setTimeout(() => {
-        this.cleanup();
-      }, 500);
     } catch (error) {
       console.error('Failed to play audio:', error);
     }
   }
 
   stop(): void {
+    if (!this.isPlaying) return;
+
     try {
+      this.isPlaying = false;
       this.cleanup();
     } catch (error) {
       console.error('Error while stopping the audio:', error);

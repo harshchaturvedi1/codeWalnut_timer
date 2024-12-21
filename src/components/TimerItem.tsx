@@ -27,13 +27,16 @@ export const TimerItem: React.FC<TimerItemProps> = ({ timer }) => {
         setRemainingTime((prev) => {
           if (prev <= 1 && !hasEndedRef.current) {
             hasEndedRef.current = true;
+
+            // Play notification sound
             timerAudio.play().catch(console.error);
 
+            // Display snack bar with dismiss option
             toast.success(`Timer "${timer.title}" has ended!`, {
-              duration: 5000,
+              duration: Infinity, // Keep the snackbar open until dismissed
               action: {
                 label: 'Dismiss',
-                onClick: timerAudio.stop,
+                onClick: timerAudio.stop, // Stop sound on dismiss
               },
             });
 
@@ -42,8 +45,12 @@ export const TimerItem: React.FC<TimerItemProps> = ({ timer }) => {
           return Math.max(0, prev - 1);
         });
       }, 1000);
+    } else if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
 
+    // Cleanup interval on unmount or timer stop
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
