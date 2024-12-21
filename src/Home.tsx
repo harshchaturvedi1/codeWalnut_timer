@@ -1,16 +1,38 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Clock } from 'lucide-react';
 import { TimerList } from './components/TimerList';
 import { Toaster } from 'sonner';
 import { Button } from './components/shared/Button';
 import { TimerModal } from './components/TimerModal';
+import { useTimerStore } from './store/useTimerStore';
 
 function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [toasterPosition, setToasterPosition] = useState<'top-right' | 'bottom-center'>(
+    'top-right'
+  );
+
+  // Handle responsive Toaster position
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        setToasterPosition('bottom-center'); // Mobile
+      } else {
+        setToasterPosition('top-right'); // Desktop
+      }
+    };
+
+    handleResize(); // Set initial position
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <Toaster position="top-right" />
+      <Toaster position={toasterPosition} />
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           {/* Timer Title */}
@@ -27,7 +49,6 @@ function Home() {
             <Plus className="w-5 h-5" />
             Add Timer
           </Button>
-
         </div>
 
         <TimerList />
