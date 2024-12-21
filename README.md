@@ -11,9 +11,6 @@ A **React + Vite** application that allows you to create and manage multiple tim
 3. [Project Setup](#project-setup)
 4. [Running the Project](#running-the-project)
 5. [Running Tests](#running-tests)
-6. [Project Structure](#project-structure)
-7. [Feedback and Contributions](#feedback-and-contributions)
-8. [License](#license)
 
 ---
 
@@ -57,11 +54,20 @@ The **Timer App** lets you:
    npm install
    ```
 
-3. **Run the development server**
-   ```bash
-   npm run dev
-   ```
-4. **Running tests**
+3. **Running tests**
    ```bash
    npm run test
    ```
+
+## Running the Project
+
+1. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+
+## Running Tests
+
+```bash
+npm run dev
+```
