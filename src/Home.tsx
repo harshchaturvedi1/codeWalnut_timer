@@ -12,7 +12,6 @@ function Home() {
     'top-right'
   );
 
-  // Handle responsive Toaster position
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth <= 768) {

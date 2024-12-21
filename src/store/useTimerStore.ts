@@ -2,8 +2,19 @@ import { configureStore, createSlice } from '@reduxjs/toolkit';
 import { useDispatch, useSelector } from 'react-redux';
 import { Timer } from '../types/timer';
 
+const LOCAL_STORAGE_KEY = 'timers';
+
+const loadTimersFromLocalStorage = (): Timer[] => {
+  const storedTimers = localStorage.getItem(LOCAL_STORAGE_KEY);
+  return storedTimers ? JSON.parse(storedTimers) : [];
+};
+
+const saveTimersToLocalStorage = (timers: Timer[]) => {
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(timers));
+};
+
 const initialState = {
-  timers: [] as Timer[],
+  timers: loadTimersFromLocalStorage(),
 };
 
 const timerSlice = createSlice({
@@ -11,26 +22,31 @@ const timerSlice = createSlice({
   initialState,
   reducers: {
     addTimer: (state, action) => {
-      state.timers.push({
+      const newTimer = {
         ...action.payload,
         id: crypto.randomUUID(),
         createdAt: Date.now(),
-      });
+      };
+      state.timers.push(newTimer);
+      saveTimersToLocalStorage(state.timers); 
     },
     deleteTimer: (state, action) => {
       state.timers = state.timers.filter(timer => timer.id !== action.payload);
+      saveTimersToLocalStorage(state.timers); 
     },
     toggleTimer: (state, action) => {
       const timer = state.timers.find(timer => timer.id === action.payload);
       if (timer) {
         timer.isRunning = !timer.isRunning;
+        saveTimersToLocalStorage(state.timers);
       }
     },
     updateTimer: (state, action) => {
       const timer = state.timers.find(timer => timer.id === action.payload);
       if (timer && timer.isRunning) {
-        timer.remainingTime = Math.max(0, timer.remainingTime - 1); // Ensure remainingTime doesn't go negative
-        timer.isRunning = timer.remainingTime > 0; // Stop when time runs out
+        timer.remainingTime = Math.max(0, timer.remainingTime - 1); 
+        timer.isRunning = timer.remainingTime > 0; 
+        saveTimersToLocalStorage(state.timers); 
       }
     },
     restartTimer: (state, action) => {
@@ -38,6 +54,7 @@ const timerSlice = createSlice({
       if (timer) {
         timer.remainingTime = timer.duration;
         timer.isRunning = false;
+        saveTimersToLocalStorage(state.timers); 
       }
     },
     editTimer: (state, action) => {
@@ -50,6 +67,7 @@ const timerSlice = createSlice({
           remainingTime: duration ?? timer.remainingTime,
           isRunning: false,
         });
+        saveTimersToLocalStorage(state.timers); 
       }
     },
   },
