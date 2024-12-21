@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Clock } from 'lucide-react';
 import { useTimerStore } from '../store/useTimerStore';
 import { validateTimerForm } from '../utils/validation';
+import { Button } from './shared/Button';
 
 interface AddTimerModalProps {
   isOpen: boolean;
@@ -77,12 +78,13 @@ export const AddTimerModal: React.FC<AddTimerModalProps> = ({ isOpen, onClose })
             <Clock className="w-5 h-5 text-blue-600" />
             <h2 className="text-xl font-semibold">Add New Timer</h2>
           </div>
-          <button
+          <Button
             onClick={handleClose}
+            variant="unstyled"
             className="p-1 hover:bg-gray-100 rounded-full transition-colors"
           >
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -98,8 +100,8 @@ export const AddTimerModal: React.FC<AddTimerModalProps> = ({ isOpen, onClose })
               onBlur={() => setTouched({ ...touched, title: true })}
               maxLength={50}
               className={`w-full px-3 py-2 border ${touched.title && !isTitleValid
-                  ? 'border-red-500 focus:ring-red-500'
-                  : 'border-gray-300 focus:ring-blue-500'
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-300 focus:ring-blue-500'
                 } rounded-md shadow-sm focus:outline-none focus:ring-2`}
               placeholder="Enter timer title"
             />
@@ -183,23 +185,13 @@ export const AddTimerModal: React.FC<AddTimerModalProps> = ({ isOpen, onClose })
 
           {/* Buttons */}
           <div className="flex justify-end gap-3 pt-4 border-t">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
+            <Button label="Cancel" onClick={handleClose} variant="secondary" />
+            <Button
+              label="Add Timer"
               type="submit"
-              className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors ${isTitleValid && isTimeValid
-                  ? 'bg-blue-600 hover:bg-blue-700'
-                  : 'bg-blue-400 cursor-not-allowed'
-                }`}
+              variant="primary"
               disabled={!isTitleValid || !isTimeValid}
-            >
-              Add Timer
-            </button>
+            />
           </div>
         </form>
       </div>
